@@ -6,13 +6,42 @@ from django.template import loader
 
 from . import constants
 from .conf import settings
+import django
 
+
+if django.VERSION < (1,11):
+    # use RadioFieldRenderer
+
+    class TemplateRenderer(django.forms.widgets.RadioFieldRenderer):
+        template_name = None
+
+        def render(self):
+            from django.template.loader import render_to_string
+            return render_to_string(
+                self.template_name,
+                {'selects': self},
+            )
+else:
+    class TemplateRenderer(object):
+        pass
+
+class ContextRenderer(TemplateRenderer):
+    template_name = 'admin/aldryn_bootstrap3/widgets/context.html'
+
+class SizeRenderer(TemplateRenderer):
+    template_name = 'admin/aldryn_bootstrap3/widgets/size.html'
+
+class LinkOrButtonRenderer(TemplateRenderer):
+    template_name = 'admin/aldryn_bootstrap3/widgets/link_or_button.html'
+    
     
 class Context(django.forms.widgets.RadioSelect):
+    renderer = ContextRenderer
     template_name = 'admin/aldryn_bootstrap3/widgets/context.html'
 
 
 class Size(django.forms.widgets.RadioSelect):
+    renderer = SizeRenderer
     template_name = 'admin/aldryn_bootstrap3/widgets/size.html'
 
 
@@ -52,6 +81,7 @@ class MiniTextarea(django.forms.widgets.Textarea):
 
 
 class LinkOrButton(django.forms.widgets.RadioSelect):
+    renderer = LinkOrButtonRenderer
     template_name = 'admin/aldryn_bootstrap3/widgets/link_or_button.html'
 
 
